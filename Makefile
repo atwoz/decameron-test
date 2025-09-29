@@ -1,14 +1,19 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -O2
 TARGET = webserver
+SOURCES = webserver.c execute.c
+OBJECTS = $(SOURCES:.c=.o)
 
 all: $(TARGET)
 
-$(TARGET): webserver.c
-	$(CC) $(CFLAGS) -o $(TARGET) webserver.c
+$(TARGET): $(OBJECTS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJECTS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(TARGET)
+	rm -f $(TARGET) $(OBJECTS)
 
 run: $(TARGET)
 	./$(TARGET)

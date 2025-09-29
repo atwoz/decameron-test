@@ -3,15 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C Webserver Demo</title>
+    <title>AC Control Dashboard</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to the C Webserver!</h1>
-        <p>This page is served by a simple webserver written in C.</p>
-        <button id="clickBtn">Click Me!</button>
-        <p id="message"></p>
+        <h1>AC Control Dashboard</h1>
+
+        <!-- AC State Card -->
+        <div class="card ac-state-card">
+            <div class="card-header">
+                <h2>AC Status</h2>
+                <span class="status-badge" id="statusBadge">Loading...</span>
+            </div>
+            <div class="card-body">
+                <div class="state-info">
+                    <div class="info-item">
+                        <span class="label">Power</span>
+                        <span class="value" id="powerState">--</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Current Temp</span>
+                        <span class="value temperature" id="currentTemp">--°C</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Target Temp</span>
+                        <span class="value temperature" id="targetTemp">--°C</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Mode</span>
+                        <span class="value" id="mode">--</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Fan Speed</span>
+                        <span class="value" id="fanSpeed">--</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Last Updated</span>
+                        <span class="value small" id="lastUpdated">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controllers Card -->
+        <div class="card controllers-card">
+            <div class="card-header">
+                <h2>Controls</h2>
+            </div>
+            <div class="card-body">
+                <!-- Temperature Slider -->
+                <div class="slider-container">
+                    <div class="slider-header">
+                        <label for="tempSlider">Set Temperature</label>
+                        <span class="slider-value" id="tempValue">24°C</span>
+                    </div>
+                    <input type="range" id="tempSlider" class="slider" min="16" max="30" value="24" step="1">
+                    <div class="slider-labels">
+                        <span>16°C</span>
+                        <span>30°C</span>
+                    </div>
+                </div>
+
+                <!-- Refetch Interval Slider -->
+                <div class="slider-container">
+                    <div class="slider-header">
+                        <label for="intervalSlider">Refetch Interval</label>
+                        <span class="slider-value" id="intervalValue">5s</span>
+                    </div>
+                    <input type="range" id="intervalSlider" class="slider" min="1" max="30" value="5" step="1">
+                    <div class="slider-labels">
+                        <span>1s</span>
+                        <span>30s</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>
