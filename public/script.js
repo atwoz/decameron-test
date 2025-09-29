@@ -13,88 +13,95 @@ document.addEventListener('DOMContentLoaded', () => {
     const lastUpdated = document.getElementById('lastUpdated');
 
     // State
-    let refetchInterval = 5; // seconds
+    let sendInterval = 5; // seconds
     let targetTemperature = 24; // celsius
     let intervalTimer = null;
+    let debounceTimer = null;
 
-    // Temperature Slider Handler
-    tempSlider.addEventListener('input', (e) => {
-        targetTemperature = parseInt(e.target.value);
-        tempValue.textContent = `${targetTemperature}°C`;
-        // TODO: Send temperature change to AC API
-        console.log('Set temperature to:', targetTemperature);
-    });
-
-    // Refetch Interval Slider Handler
-    intervalSlider.addEventListener('input', (e) => {
-        refetchInterval = parseInt(e.target.value);
-        intervalValue.textContent = `${refetchInterval}s`;
-
-        // Restart the refetch timer with new interval
-        clearInterval(intervalTimer);
-        startRefetchTimer();
-        console.log('Set refetch interval to:', refetchInterval, 'seconds');
-    });
-
-    // Fetch AC State Function
-    async function fetchACState() {
+    // Send temperature to /execute endpoint
+    async function sendTemperature(temperature) {
         try {
-            // TODO: Replace with actual API endpoint
-            // For now, simulating API call with mock data
-            const mockData = {
-                power: Math.random() > 0.5 ? 'ON' : 'OFF',
-                currentTemp: (20 + Math.random() * 10).toFixed(1),
-                targetTemp: targetTemperature,
-                mode: ['Cool', 'Heat', 'Fan', 'Auto'][Math.floor(Math.random() * 4)],
-                fanSpeed: ['Low', 'Medium', 'High', 'Auto'][Math.floor(Math.random() * 4)],
-                online: Math.random() > 0.2
-            };
+            const response = await fetch('/execute', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ temperature: temperature })
+            });
 
-            // Simulate API delay
-            await new Promise(resolve => setTimeout(resolve, 300));
+            const data = await response.json();
+            console.log('Temperature sent:', temperature, 'Response:', data);
 
-            updateUI(mockData);
+            // Update UI with AC state from response
+            if (data.status === 'success') {
+                statusBadge.textContent = 'Online';
+                statusBadge.className = 'status-badge online';
+
+                // Update AC state display
+                powerState.textContent = data.power || 'ON';
+                currentTemp.textContent = `${data.currentTemp}°C`;
+                targetTemp.textContent = `${data.targetTemp}°C`;
+                mode.textContent = data.mode || 'Cool';
+                fanSpeed.textContent = data.fanSpeed || 'Auto';
+                lastUpdated.textContent = new Date().toLocaleTimeString();
+            }
         } catch (error) {
-            console.error('Error fetching AC state:', error);
+            console.error('Error sending temperature:', error);
             statusBadge.textContent = 'Error';
             statusBadge.className = 'status-badge offline';
         }
     }
 
-    // Update UI with AC State
-    function updateUI(data) {
-        // Update status badge
-        if (data.online) {
-            statusBadge.textContent = 'Online';
-            statusBadge.className = 'status-badge online';
-        } else {
-            statusBadge.textContent = 'Offline';
-            statusBadge.className = 'status-badge offline';
-        }
+    // Temperature Slider Handler with debounce
+    tempSlider.addEventListener('input', (e) => {
+        targetTemperature = parseInt(e.target.value);
+        tempValue.textContent = `${targetTemperature}°C`;
+        targetTemp.textContent = `${targetTemperature}°C`;
+    });
 
-        // Update state info
-        powerState.textContent = data.power;
-        currentTemp.textContent = `${data.currentTemp}°C`;
-        targetTemp.textContent = `${data.targetTemp}°C`;
-        mode.textContent = data.mode;
-        fanSpeed.textContent = data.fanSpeed;
-        lastUpdated.textContent = new Date().toLocaleTimeString();
-    }
+    // Send temperature when user releases the slider (change event)
+    tempSlider.addEventListener('change', (e) => {
+        targetTemperature = parseInt(e.target.value);
+        console.log('Sending temperature:', targetTemperature);
+        sendTemperature(targetTemperature);
+    });
 
-    // Start Refetch Timer
-    function startRefetchTimer() {
+    // Send Interval Slider Handler
+    intervalSlider.addEventListener('input', (e) => {
+        sendInterval = parseInt(e.target.value);
+        intervalValue.textContent = `${sendInterval}s`;
+
+        // Restart the send timer with new interval
+        clearInterval(intervalTimer);
+        startSendTimer();
+        console.log('Set send interval to:', sendInterval, 'seconds');
+    });
+
+    // Start Send Timer - periodically sends current temperature
+    function startSendTimer() {
         intervalTimer = setInterval(() => {
-            fetchACState();
-        }, refetchInterval * 1000);
+            sendTemperature(targetTemperature);
+            lastUpdated.textContent = new Date().toLocaleTimeString();
+        }, sendInterval * 1000);
     }
 
     // Initialize
     tempValue.textContent = `${targetTemperature}°C`;
-    intervalValue.textContent = `${refetchInterval}s`;
+    intervalValue.textContent = `${sendInterval}s`;
+    targetTemp.textContent = `${targetTemperature}°C`;
 
-    // Initial fetch
-    fetchACState();
+    // Set initial mock data
+    powerState.textContent = 'ON';
+    currentTemp.textContent = '24.0°C';
+    mode.textContent = 'Cool';
+    fanSpeed.textContent = 'Auto';
+    statusBadge.textContent = 'Ready';
+    statusBadge.className = 'status-badge';
+    lastUpdated.textContent = new Date().toLocaleTimeString();
 
-    // Start automatic refetching
-    startRefetchTimer();
+    // Initial send
+    sendTemperature(targetTemperature);
+
+    // Start automatic sending
+    startSendTimer();
 });
