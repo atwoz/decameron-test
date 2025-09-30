@@ -8,7 +8,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>AC Control Dashboard</h1>
+        <div class="header-container">
+            <h1>AC Control Dashboard</h1>
+            <div class="indicator" id="requestIndicator"></div>
+        </div>
 
         <!-- AC State Card -->
         <div class="card ac-state-card">
@@ -76,6 +79,15 @@
                         <span>1s</span>
                         <span>30s</span>
                     </div>
+                </div>
+
+                <!-- Presence Toggle -->
+                <div class="toggle-container">
+                    <label for="presenceToggle">Presence</label>
+                    <label class="switch">
+                        <input type="checkbox" id="presenceToggle" checked>
+                        <span class="switch-slider"></span>
+                    </label>
                 </div>
             </div>
         </div>

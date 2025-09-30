@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const tempValue = document.getElementById('tempValue');
     const intervalSlider = document.getElementById('intervalSlider');
     const intervalValue = document.getElementById('intervalValue');
+    const presenceToggle = document.getElementById('presenceToggle');
+    const requestIndicator = document.getElementById('requestIndicator');
     const statusBadge = document.getElementById('statusBadge');
     const powerState = document.getElementById('powerState');
     const currentTemp = document.getElementById('currentTemp');
@@ -15,18 +17,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // State
     let sendInterval = 5; // seconds
     let targetTemperature = 24; // celsius
+    let presence = true; // default presence on
     let intervalTimer = null;
     let debounceTimer = null;
 
-    // Send temperature to /execute endpoint
-    async function sendTemperature(temperature) {
+    // Flash indicator light
+    function flashIndicator() {
+        requestIndicator.classList.add('active');
+        setTimeout(() => {
+            requestIndicator.classList.remove('active');
+        }, 300);
+    }
+
+    // Send data to /execute endpoint
+    async function sendData(temperature, presenceState) {
+        flashIndicator();
         try {
             const response = await fetch('/execute', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ temperature: temperature })
+                body: JSON.stringify({
+                    temperature: temperature,
+                    presence: presenceState ? 1 : 0
+                })
             });
 
             const data = await response.json();
@@ -59,11 +74,18 @@ document.addEventListener('DOMContentLoaded', () => {
         targetTemp.textContent = `${targetTemperature}°C`;
     });
 
-    // Send temperature when user releases the slider (change event)
+    // Send data when user releases the slider (change event)
     tempSlider.addEventListener('change', (e) => {
         targetTemperature = parseInt(e.target.value);
         console.log('Sending temperature:', targetTemperature);
-        sendTemperature(targetTemperature);
+        sendData(targetTemperature, presence);
+    });
+
+    // Presence Toggle Handler
+    presenceToggle.addEventListener('change', (e) => {
+        presence = e.target.checked;
+        console.log('Presence changed to:', presence);
+        sendData(targetTemperature, presence);
     });
 
     // Send Interval Slider Handler
@@ -77,10 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Set send interval to:', sendInterval, 'seconds');
     });
 
-    // Start Send Timer - periodically sends current temperature
+    // Start Send Timer - periodically sends current data
     function startSendTimer() {
         intervalTimer = setInterval(() => {
-            sendTemperature(targetTemperature);
+            sendData(targetTemperature, presence);
             lastUpdated.textContent = new Date().toLocaleTimeString();
         }, sendInterval * 1000);
     }
@@ -100,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
     lastUpdated.textContent = new Date().toLocaleTimeString();
 
     // Initial send
-    sendTemperature(targetTemperature);
+    sendData(targetTemperature, presence);
 
     // Start automatic sending
     startSendTimer();

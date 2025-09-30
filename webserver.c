@@ -145,8 +145,21 @@ void handle_request(int client_fd)
                 }
             }
 
-            // Execute with temperature
-            const char *response = execute(temperature);
+            // Extract presence from JSON body (simple parsing)
+            int presence = 1; // default ON
+            char *presence_start = strstr(body_start, "\"presence\"");
+            if (presence_start)
+            {
+                presence_start = strchr(presence_start, ':');
+                if (presence_start)
+                {
+                    presence_start++;
+                    presence = atoi(presence_start);
+                }
+            }
+
+            // Execute with temperature and presence
+            const char *response = execute(temperature, presence);
             send_response(client_fd, 200, "OK", "application/json", response, strlen(response));
         }
         else
