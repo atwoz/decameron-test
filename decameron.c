@@ -33,6 +33,10 @@ bool _decameron_check_positive_delta_in_humidity_and_temp(void)
     float delta_humidity = 0;
     float delta_temp = 0;
 
+    // only after 30 minutes do we check for positive delta
+    if (_context.minute_count < 30) {
+        return false;
+    }
 
     for (i = 0; i < 30; i++) {
         index = _context.measurement_index - i;
@@ -72,16 +76,27 @@ bool _decameron_process(dec_ac_state_t *ac_state) {
     if (current_index < 0) {
         current_index = MAX_MEASUREMENTS - 1;
     }
-    if (_context.last_cmd < _context.conditions.cmd_timeout_day) {
-        return false;
+    if (_context.is_night == false)
+    {
+        if (_context.last_cmd < _context.conditions.cmd_timeout_day)
+        {
+            printf("last cmd: %d, cmd timeout day: %d\n", _context.last_cmd, _context.conditions.cmd_timeout_day);
+            return false;
+        }
     }
-    if (_context.last_cmd < _context.conditions.cmd_timeout_night) {
-        return false;
+    else
+    {
+        if (_context.last_cmd < _context.conditions.cmd_timeout_night)
+        {
+            printf("last cmd: %d, cmd timeout night: %d\n", _context.last_cmd, _context.conditions.cmd_timeout_night);
+            return false;
+        }
     }
 
     if (_decameron_is_present() == false) {
         if (_context.was_present == true)
         {
+            printf("is present: false\n");
             // acaba de estar ausente
             // Enviamos comando de temperatura alta
             _context.was_present = false;
@@ -94,6 +109,7 @@ bool _decameron_process(dec_ac_state_t *ac_state) {
 
     // Si la temperatura es mayor a la maxima, enviamos temperatura alta
     if (_context.measurement[current_index].temperature >= _context.conditions.max_temperature) {
+        printf("temperature is greater than max temperature: %f\n", _context.measurement[current_index].temperature);
         ac_state->temp = _context.cmd.cmd_temp_high;
         ac_state->fan = _context.cmd.cmd_fan_high;
         _context.last_cmd = 0;
@@ -101,6 +117,7 @@ bool _decameron_process(dec_ac_state_t *ac_state) {
     }
 
     if (_context.measurement[current_index].temperature <= _context.conditions.min_temperature) {
+        printf("temperature is less than min temperature: %f\n", _context.measurement[current_index].temperature);
         ac_state->temp = _context.cmd.cmd_temp_low;
         ac_state->fan = _context.cmd.cmd_fan_low;
         _context.last_cmd = 0;
@@ -108,6 +125,7 @@ bool _decameron_process(dec_ac_state_t *ac_state) {
     }
 
     if (_context.measurement[current_index].humidity >= _context.conditions.max_humidity) {
+        printf("humidity is greater than max humidity: %f\n", _context.measurement[current_index].humidity);
         ac_state->temp = _context.measurement[current_index].temperature - 1;
         if (ac_state->temp > _context.cmd.cmd_temp_high) {
             ac_state->temp = _context.cmd.cmd_temp_high;
@@ -120,19 +138,21 @@ bool _decameron_process(dec_ac_state_t *ac_state) {
         return true;
     }
 
-    if (_decameron_check_positive_delta_in_humidity_and_temp()) {
-        ac_state->temp = _context.measurement[current_index].temperature - 1;
-        if (ac_state->temp > _context.cmd.cmd_temp_high) {
-            ac_state->temp = _context.cmd.cmd_temp_high;
-        }
-        if (ac_state->temp < _context.cmd.cmd_temp_low) {
-            ac_state->temp = _context.cmd.cmd_temp_low;
-        }
-        ac_state->fan = _context.cmd.cmd_fan_low;
-        _context.last_cmd = 0;
-        return true;
-    }
-    
+    // if (_decameron_check_positive_delta_in_humidity_and_temp()) {
+    //     printf("positive delta in humidity and temp\n");
+    //     ac_state->temp = _context.measurement[current_index].temperature - 1;
+    //     if (ac_state->temp > _context.cmd.cmd_temp_high) {
+    //         ac_state->temp = _context.cmd.cmd_temp_high;
+    //     }
+    //     if (ac_state->temp < _context.cmd.cmd_temp_low) {
+    //         ac_state->temp = _context.cmd.cmd_temp_low;
+    //     }
+    //     ac_state->fan = _context.cmd.cmd_fan_low;
+    //     _context.last_cmd = 0;
+    //     return true;
+    // }
+
+    printf("no command to send\n");
     return false;
 }
 
@@ -153,10 +173,13 @@ void DECAMERON_init(void) {
     _context.cmd.cmd_fan_high = 1;
     _context.cmd.cmd_temp_low = 23;
     _context.cmd.cmd_fan_low = 3;
-    _context.last_cmd = 0;
+    _context.last_cmd = 20;
+    // nights starts false
+    _context.is_night = false;
 }
 
-bool DECAMERON_feed(dec_measurement_t *measurement, dec_ac_state_t *ac_state) {
+bool DECAMERON_feed(dec_measurement_t *measurement, uint32_t last_presence, bool is_night, dec_ac_state_t *ac_state) {
+
     // add to circular buffer
     _context.measurement[_context.measurement_index] = *measurement;
     _context.measurement_index++;
@@ -165,6 +188,12 @@ bool DECAMERON_feed(dec_measurement_t *measurement, dec_ac_state_t *ac_state) {
     }
     _context.minute_count++;
     _context.last_cmd++;
+    _context.last_presence = last_presence;
+    _context.is_night = is_night;
+
+    printf("Measurement: %.1f°C, %.1f%%\n", measurement->temperature, measurement->humidity);
+    printf ("Last cmd: %d, night: %d, last presence: %d\n", _context.last_cmd, _context.is_night, _context.last_presence);
+
 
     return _decameron_process(ac_state);
 }

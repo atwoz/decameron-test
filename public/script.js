@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         intervalTimer = setInterval(() => {
             sendData(targetTemperature, targetHumidity, presence);
             lastUpdated.textContent = new Date().toLocaleTimeString();
-        }, sendInterval * 1000);
+        }, sendInterval * 100);
     }
 
     // Initialize

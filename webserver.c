@@ -130,10 +130,10 @@ void handle_request(int client_fd)
         if (body_start)
         {
             body_start += 4; // Skip past the "\r\n\r\n"
-            printf("POST /execute - Body: %s\n", body_start);
+            // printf("POST /execute - Body: %s\n", body_start);
 
             // Extract temperature from JSON body (simple parsing)
-            int temperature = 24; // default
+            float temperature = 0; // default
             char *temp_start = strstr(body_start, "\"temperature\"");
             if (temp_start)
             {
@@ -141,12 +141,12 @@ void handle_request(int client_fd)
                 if (temp_start)
                 {
                     temp_start++;
-                    temperature = atoi(temp_start);
+                    temperature = strtol(temp_start, NULL, 10);
                 }
             }
 
             // Extract humidity from JSON body (simple parsing)
-            int humidity = 50; // default
+            float humidity = 50; // default
             char *humidity_start = strstr(body_start, "\"humidity\"");
             if (humidity_start)
             {
@@ -154,7 +154,7 @@ void handle_request(int client_fd)
                 if (humidity_start)
                 {
                     humidity_start++;
-                    humidity = atoi(humidity_start);
+                    humidity = strtol(humidity_start, NULL, 10);
                 }
             }
 

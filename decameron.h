@@ -54,5 +54,5 @@ typedef struct {
 } decameron_context_t;
 
 
-bool DECAMERON_feed(dec_measurement_t *measurement, dec_ac_state_t *ac_state);
+bool DECAMERON_feed(dec_measurement_t *measurement, uint32_t last_presence, bool is_night, dec_ac_state_t *ac_state);
 void DECAMERON_init(void);
