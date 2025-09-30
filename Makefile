@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -O2
 TARGET = webserver
-SOURCES = webserver.c execute.c
+SOURCES = webserver.c execute.c decameron.c
 OBJECTS = $(SOURCES:.c=.o)
 
 all: $(TARGET)

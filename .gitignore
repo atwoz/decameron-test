@@ -1,0 +1,52 @@
+# Compiled object files
+*.o
+*.obj
+
+# Compiled dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled static libraries
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.stackdump
+
+# Build directories
+/build/
+/bin/
+/debug/
+/release/
+
+# IDE/project files
+*.swp
+*~
+*.bak
+*.tmp
+*.log
+
+# Common editors
+.vscode/
+.idea/
+*.iml
+
+# Autotools
+Makefile.in
+/aclocal.m4
+/autom4te.cache/
+/compile
+/config.*
+/depcomp
+/install-sh
+/missing
