@@ -7,7 +7,7 @@
 
 static char response_buffer[1024];
 
-const char *execute(int temperature, int presence)
+const char *execute(int temperature, int humidity, int presence)
 {
     static bool run_once = true;
     static uint8_t set_temperature = 0;
@@ -44,6 +44,8 @@ const char *execute(int temperature, int presence)
         presence ? "ON" : "OFF",
         currentTemp,
         set_temperature,
+        temperature,
+        humidity,
         presence);
 
 

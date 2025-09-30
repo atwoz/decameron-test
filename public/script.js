@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // DOM Elements
     const tempSlider = document.getElementById('tempSlider');
     const tempValue = document.getElementById('tempValue');
+    const humiditySlider = document.getElementById('humiditySlider');
+    const humidityValue = document.getElementById('humidityValue');
     const intervalSlider = document.getElementById('intervalSlider');
     const intervalValue = document.getElementById('intervalValue');
     const presenceToggle = document.getElementById('presenceToggle');
@@ -12,11 +14,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const targetTemp = document.getElementById('targetTemp');
     const mode = document.getElementById('mode');
     const fanSpeed = document.getElementById('fanSpeed');
+    const currentHumidity = document.getElementById('currentHumidity');
     const lastUpdated = document.getElementById('lastUpdated');
 
     // State
     let sendInterval = 5; // seconds
     let targetTemperature = 24; // celsius
+    let targetHumidity = 50; // percent
     let presence = true; // default presence on
     let intervalTimer = null;
     let debounceTimer = null;
@@ -30,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Send data to /execute endpoint
-    async function sendData(temperature, presenceState) {
+    async function sendData(temperature, humidity, presenceState) {
         flashIndicator();
         try {
             const response = await fetch('/execute', {
@@ -40,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 body: JSON.stringify({
                     temperature: temperature,
+                    humidity: humidity,
                     presence: presenceState ? 1 : 0
                 })
             });
@@ -58,34 +63,48 @@ document.addEventListener('DOMContentLoaded', () => {
                 targetTemp.textContent = `${data.targetTemp}°C`;
                 mode.textContent = data.mode || 'Cool';
                 fanSpeed.textContent = data.fanSpeed || 'Auto';
+                currentHumidity.textContent = `${data.humidity}%`;
                 lastUpdated.textContent = new Date().toLocaleTimeString();
             }
         } catch (error) {
-            console.error('Error sending temperature:', error);
+            console.error('Error sending data:', error);
             statusBadge.textContent = 'Error';
             statusBadge.className = 'status-badge offline';
         }
     }
 
-    // Temperature Slider Handler with debounce
+    // Temperature Slider Handler
     tempSlider.addEventListener('input', (e) => {
         targetTemperature = parseFloat(e.target.value);
         tempValue.textContent = `${targetTemperature}°C`;
         targetTemp.textContent = `${targetTemperature}°C`;
     });
 
-    // Send data when user releases the slider (change event)
+    // Send data when user releases the temperature slider
     tempSlider.addEventListener('change', (e) => {
         targetTemperature = parseFloat(e.target.value);
         console.log('Sending temperature:', targetTemperature);
-        sendData(targetTemperature, presence);
+        sendData(targetTemperature, targetHumidity, presence);
+    });
+
+    // Humidity Slider Handler
+    humiditySlider.addEventListener('input', (e) => {
+        targetHumidity = parseFloat(e.target.value);
+        humidityValue.textContent = `${targetHumidity}%`;
+    });
+
+    // Send data when user releases the humidity slider
+    humiditySlider.addEventListener('change', (e) => {
+        targetHumidity = parseInt(e.target.value);
+        console.log('Sending humidity:', targetHumidity);
+        sendData(targetTemperature, targetHumidity, presence);
     });
 
     // Presence Toggle Handler
     presenceToggle.addEventListener('change', (e) => {
         presence = e.target.checked;
         console.log('Presence changed to:', presence);
-        sendData(targetTemperature, presence);
+        sendData(targetTemperature, targetHumidity, presence);
     });
 
     // Send Interval Slider Handler
@@ -102,13 +121,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Start Send Timer - periodically sends current data
     function startSendTimer() {
         intervalTimer = setInterval(() => {
-            sendData(targetTemperature, presence);
+            sendData(targetTemperature, targetHumidity, presence);
             lastUpdated.textContent = new Date().toLocaleTimeString();
         }, sendInterval * 1000);
     }
 
     // Initialize
     tempValue.textContent = `${targetTemperature}°C`;
+    humidityValue.textContent = `${targetHumidity}%`;
     intervalValue.textContent = `${sendInterval}s`;
     targetTemp.textContent = `${targetTemperature}°C`;
 
@@ -122,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
     lastUpdated.textContent = new Date().toLocaleTimeString();
 
     // Initial send
-    sendData(targetTemperature, presence);
+    sendData(targetTemperature, targetHumidity, presence);
 
     // Start automatic sending
     startSendTimer();
