@@ -69,14 +69,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Temperature Slider Handler with debounce
     tempSlider.addEventListener('input', (e) => {
-        targetTemperature = parseInt(e.target.value);
+        targetTemperature = parseFloat(e.target.value);
         tempValue.textContent = `${targetTemperature}°C`;
         targetTemp.textContent = `${targetTemperature}°C`;
     });
 
     // Send data when user releases the slider (change event)
     tempSlider.addEventListener('change', (e) => {
-        targetTemperature = parseInt(e.target.value);
+        targetTemperature = parseFloat(e.target.value);
         console.log('Sending temperature:', targetTemperature);
         sendData(targetTemperature, presence);
     });
