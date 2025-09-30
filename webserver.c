@@ -145,6 +145,19 @@ void handle_request(int client_fd)
                 }
             }
 
+            // Extract humidity from JSON body (simple parsing)
+            int humidity = 50; // default
+            char *humidity_start = strstr(body_start, "\"humidity\"");
+            if (humidity_start)
+            {
+                humidity_start = strchr(humidity_start, ':');
+                if (humidity_start)
+                {
+                    humidity_start++;
+                    humidity = atoi(humidity_start);
+                }
+            }
+
             // Extract presence from JSON body (simple parsing)
             int presence = 1; // default ON
             char *presence_start = strstr(body_start, "\"presence\"");
@@ -158,8 +171,8 @@ void handle_request(int client_fd)
                 }
             }
 
-            // Execute with temperature and presence
-            const char *response = execute(temperature, presence);
+            // Execute with temperature, humidity, and presence
+            const char *response = execute(temperature, humidity, presence);
             send_response(client_fd, 200, "OK", "application/json", response, strlen(response));
         }
         else

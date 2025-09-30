@@ -42,6 +42,10 @@
                         <span class="value" id="fanSpeed">--</span>
                     </div>
                     <div class="info-item">
+                        <span class="label">Humidity</span>
+                        <span class="value" id="currentHumidity">--</span>
+                    </div>
+                    <div class="info-item">
                         <span class="label">Last Updated</span>
                         <span class="value small" id="lastUpdated">--</span>
                     </div>
@@ -61,10 +65,23 @@
                         <label for="tempSlider">Set Temperature</label>
                         <span class="slider-value" id="tempValue">24°C</span>
                     </div>
-                    <input type="range" id="tempSlider" class="slider" min="20" max="28" value="20" step="0.1">
+                    <input type="range" id="tempSlider" class="slider" min="20" max="28" value="24" step="0.1">
                     <div class="slider-labels">
                         <span>20°C</span>
                         <span>28°C</span>
+                    </div>
+                </div>
+
+                <!-- Humidity Slider -->
+                <div class="slider-container">
+                    <div class="slider-header">
+                        <label for="humiditySlider">Set Humidity</label>
+                        <span class="slider-value" id="humidityValue">50%</span>
+                    </div>
+                    <input type="range" id="humiditySlider" class="slider" min="50" max="100" value="50" step="0.1">
+                    <div class="slider-labels">
+                        <span>30%</span>
+                        <span>70%</span>
                     </div>
                 </div>
 
@@ -72,9 +89,9 @@
                 <div class="slider-container">
                     <div class="slider-header">
                         <label for="intervalSlider">Refetch Interval</label>
-                        <span class="slider-value" id="intervalValue">5s</span>
+                        <span class="slider-value" id="intervalValue">1s</span>
                     </div>
-                    <input type="range" id="intervalSlider" class="slider" min="1" max="30" value="5" step="1">
+                    <input type="range" id="intervalSlider" class="slider" min="1" max="30" value="1" step="1">
                     <div class="slider-labels">
                         <span>1s</span>
                         <span>30s</span>
